@@ -33,6 +33,18 @@ environments)
 Task List
 =========
 
+- Configuration "array" with:
+	- Multiple queries
+	- Ports to be created to send the data received from these queries
+	- Local filesave of received data?
+- Ports are automatically made from configuration
+- Filter block in separate [repo]
+- Datatypes of ports:
+	- Can be arrays of strings (char[][])
+	- Can be serialised ascii --> serialise/deserialise blocks?
+	- "New" datatype?
+
 [Redland]: http://www.librdf.org
 [wiki]: https://www.github.com/ejans/sparql_querying/wiki
 [ontology_schema]: figs/Ontology_Schema.png?raw=true
+[repo]: https://www.github.com/ejans/sparql_filter
