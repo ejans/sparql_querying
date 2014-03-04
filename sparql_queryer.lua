@@ -37,6 +37,10 @@ function init(b)
 
    --- get conf
    local conf_str = ubx.data_tolua(ubx.config_get_data(b, "sparql_querying_conf"))
+   --- TODO Test
+   print("#########")
+   print(conf_str)
+   print("#########")
 
    if conf_str == 0 then
       print(ubx.stafe_tostr(b.name)..": invalid/nonexisting sparql_querying_conf")
@@ -45,9 +49,12 @@ function init(b)
 
    conf = conf_to_conflist(conf_str, b)
    --- TODO Test
-   print("###")
    print(conf)
-   print("###")
+   print("#########")
+   print(conf.query)
+   print("#########")
+   print(conf.datatype)
+   print("#########")
    return true
 end
 
