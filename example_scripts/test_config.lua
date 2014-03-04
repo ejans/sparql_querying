@@ -29,11 +29,11 @@ print("creating instance of 'sparql_querying/sparql_queryer'")
 --}
 --]]
 sparql_conf=[[
-   { query="PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?nick, ?name WHERE { ?x rdf:type foaf:Person . ?x foaf:nick ?nick . ?x foaf:name ?name}", datatype="xsd:string"}
+   { query="PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?nick, ?name WHERE { ?x rdf:type foaf:Person . ?x foaf:nick ?nick . ?x foaf:name ?name}", datatype="xsd:string", uri="http://www.dajobe.org/foaf.rdf"}
 ]]
 
 
-hdf5_log1=ubx.block_create(ni, "sparql_querying/sparql_queryer", "sparql_queryer1",
+sparql_queryer1=ubx.block_create(ni, "sparql_querying/sparql_queryer", "sparql_queryer1",
                            {sparql_querying_conf=sparql_conf})
 
 print("creating instance of 'std_triggers/ptrig'")
