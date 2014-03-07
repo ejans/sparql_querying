@@ -1,14 +1,19 @@
-#!/usr/bin/luajit
-
+--
+-- Microblx sparql queryer
+--
+-- SPDX-License-Identifier: BSD-3-Clause LGPL-2.1+ 
+--
+--
 local ubx=require("ubx")
-local ubx_utils = require("ubx_utils")
 local utils = require("utils")
 local cdata = require("cdata")
 local ffi = require("ffi")
 local time = require("time")
 local ts = tostring
-local strict = require"strict"
 local redland = require("redland")
+
+-- color handling via ubx
+red=ubx.red; blue=ubx.blue; cyan=ubx.cyan; white=ubx.cyan; green=ubx.green; yellow=ubx.yellow; magenta=ubx.magenta
 
 -- global state
 conf=nil
@@ -25,7 +30,7 @@ conf=nil
 local function conf_to_conflist(c, this)
    local ni = this.ni
    local succ, res = utils.eval_sandbox("return "..c)
-   if not succ then error("sparql_queryer: failed to load sparql_querying_conf:\n"..res) end
+   if not succ then error(red("sparql_queryer: failed to load sparql_querying_conf:\n"..res, true)) end
 
    --for i,conf in ipairs(res) do
    return res
@@ -38,10 +43,6 @@ function init(b)
 
    --- get conf
    local conf_str = ubx.data_tolua(ubx.config_get_data(b, "sparql_querying_conf"))
-   --- TODO Test
-   print("#########")
-   print(conf_str)
-   print("#########")
 
    if conf_str == 0 then
       print(ubx.stafe_tostr(b.name)..": invalid/nonexisting sparql_querying_conf")
@@ -49,13 +50,6 @@ function init(b)
    end
 
    conf = conf_to_conflist(conf_str, b)
-   --- TODO Test
-   print(conf)
-   print("#########")
-   print(conf.query)
-   print("#########")
-   print(conf.datatype)
-   print("#########")
 
    --- Redland part
    conf.world = redland.librdf_new_world()
@@ -69,24 +63,21 @@ function init(b)
    print("Done")
    redland.librdf_free_uri(uri)
    redland.librdf_free_parser(parser)
-
    return true
 end
 
 --- start
 function start(b)
-   print("Start")
+   --print("Start")
    return true
 end
 
 --- step
 function step(b)
-   print("Step")
-   --local query = redland.librdf_new_query(conf.world, 'sparql', null, conf.query, null)
    local query = redland.librdf_new_query(conf.world, 'sparql', nil, conf.query, nil)
    local results = redland.librdf_model_query_execute(conf.model, query)
 
-   --- TODO Test
+   --- TODO Test to stdout
    local count=0
    local val=0
    local nval=0
