@@ -16,6 +16,15 @@ Overview
 The purpose of this block is to query an ontology (local or on the internet) and to feed the gathered data to a _translator_.
 This translator block is able to get specific configuration parameters from the gathered data.
 
+Use case
+--------
+
+We have a tomato somewhere of a specific type (e.g. roma), we would like to check if the size of this tomato is inside the "range" of our roma tomato model.
+
+1. A _checker_ block creates a query and passes this to the configuration of the _sparql qyeryer_ block
+2. A _convertor/filter_ block converts and filters the result of this query to be usable for the _checker_ block
+3. The _checker_ can check if the size is in range
+
 License
 =======
 
@@ -35,16 +44,18 @@ Task List
 
 - Configuration "array" with:
 	- Multiple queries
-	- Ports to be created to send the data received from these queries
+	- Ports to be created to send the data received from these queries?
 	- Local filesave of received data?
-- Ports are automatically made from configuration
+- Configuration is an input port
+- Ports are automatically made from configuration?
 - Filter block in separate [repo]
 - Datatypes of ports:
 	- Can be arrays of strings (char[][])
 	- Can be serialised ascii --> serialise/deserialise blocks?
 	- "New" datatype?
+- Separate the _datatype_ we are going to query (e.g. hdf5, netcdf, rdf, ...) with the _transport protocol_ (http, local, ethercat, ...) so we can add middleware into the communication specific parts. --> queryer block with smaller blocks inside --> Possible to separate with redland lib?
 
 [Redland]: http://www.librdf.org
 [wiki]: https://www.github.com/ejans/sparql_querying/wiki
 [ontology_schema]: figs/Ontology_Schema.png?raw=true
-[repo]: https://www.github.com/ejans/sparql_filter
+[repo]: https://www.github.com/ejans/filtering
