@@ -30,7 +30,7 @@ conf=nil
 local function conf_to_conflist(c, this)
    local ni = this.ni
    local succ, res = utils.eval_sandbox("return "..c)
-   if not succ then error(red("sparql_queryer: failed to load sparql_querying_conf:\n"..res, true)) end
+   if not succ then error(red("queryer: failed to load querying_conf:\n"..res, true)) end
 
    --for i,conf in ipairs(res) do
    return res
@@ -42,14 +42,15 @@ function init(b)
    ubx.ffi_load_types(b.ni)
 
    --- get conf
-   local conf_str = ubx.data_tolua(ubx.config_get_data(b, "sparql_querying_conf"))
+   local conf_str = ubx.data_tolua(ubx.config_get_data(b, "querying_conf"))
 
    if conf_str == 0 then
-      print(ubx.stafe_tostr(b.name)..": invalid/nonexisting sparql_querying_conf")
+      print(ubx.stafe_tostr(b.name)..": invalid/nonexisting querying_conf")
       return false
    end
 
    conf = conf_to_conflist(conf_str, b)
+   u_data=ubx.data_alloc(b.ni, "struct queryer_data", 1)
 
    --- Redland part
    conf.world = redland.librdf_new_world()
@@ -76,8 +77,16 @@ end
 function step(b)
    local query = redland.librdf_new_query(conf.world, 'sparql', nil, conf.query, nil)
    local results = redland.librdf_model_query_execute(conf.model, query)
+   print("-----")
+   --print(ts(results))
+   local string_result = redland.librdf_query_results_to_string(results, nil, nil)
+   print(string_result)
+   print("-----")
+   local char_result = ffi.cast("char *", string_result)
+   print(char_result)
 
-   --- TODO Test to stdout
+   --- Test to stdout
+   --[[
    local count=0
    local val=0
    local nval=0
@@ -99,6 +108,16 @@ function step(b)
    if not(results == nil) then
       print("Returned "..count.." results")
    end
+   ]]--
+
+   --- TODO send out
+   local p = ubx.port_get(b, "result")
+   local data = ffi.new("struct queryer_data")
+   --- TODO Test
+   print(data)
+   data.result = char_result
+   ubx.data_set(u_data, data)
+   ubx.port_write(p, u_data)
 end
 
 --- cleanup
