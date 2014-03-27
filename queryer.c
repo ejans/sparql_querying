@@ -74,6 +74,7 @@ ubx_port_t queryer_ports[] = {
 	//{ .name="query_command", .in_type_name="char*" },
 	{ .name="query_command", .in_type_name="char" },
 	{ .name="result", .out_type_name="struct queryer_data" },
+	//{ .name="result", .out_type_name="char" },
 	{ NULL },
 };
 
