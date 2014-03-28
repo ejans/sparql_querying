@@ -17,6 +17,14 @@ Overview
 The purpose of this block is to query an ontology (local or on the internet) and to feed the gathered data to a _translator_.
 This translator block is able to get specific configuration parameters from the gathered data.
 
+![][queryer_composite]
+
+The queryer block itself contains small configurable sub blocks which have separate configurations.
+
+An example could be a _char sender_ block sending a query to a configured _queryer_ block.
+The query result is filtered or converted (e.g. from string to a table) by the _filter_ block.
+This formatted result is send out and printed by the _printer_ block.
+
 Use case
 --------
 
@@ -59,4 +67,5 @@ Task List
 [Redland]: http://www.librdf.org
 [wiki]: https://www.github.com/ejans/sparql_querying/wiki
 [ontology_schema]: figs/Ontology_Schema.png?raw=true
+[queryer_composite]: figs/Queryer_Composite.png?raw=true
 [repo]: https://www.github.com/ejans/filtering
