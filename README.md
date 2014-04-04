@@ -12,6 +12,13 @@ View the [wiki] for installing instructions.
 Overview
 ========
 
+Internals
+---------
+
+![][Blocks]
+
+Layout of the query example.
+
 ![][ontology_schema]
 
 The purpose of this block is to query an ontology (local or on the internet) and to feed the gathered data to a _filter_.
@@ -54,5 +61,6 @@ Task List
 
 [Redland]: http://www.librdf.org
 [wiki]: https://www.github.com/ejans/sparql_querying/wiki
+[Blocks]: figs/Blocks.png?raw=true
 [ontology_schema]: figs/Ontology_Schema.png?raw=true
 [repo]: https://www.github.com/ejans/filtering
