@@ -4,6 +4,8 @@ Description
 A block to query an ontology making use of the [Redland] libraries.
 This version is to be used with the dev branch of microblx.
 
+Checkout [dev branch] for the generic version of this queryer.
+
 Instructions
 ============
 
@@ -65,6 +67,7 @@ Task List
 - Separate the _datatype_ we are going to query (e.g. hdf5, netcdf, rdf, ...) with the _transport protocol_ (http, local, ethercat, ...) so we can add middleware into the communication specific parts. --> queryer block with smaller blocks inside --> Possible to separate with redland lib?
 
 [Redland]: http://www.librdf.org
+[dev branch]: https://github.com/ejans/sparql_querying/tree/dev
 [wiki]: https://www.github.com/ejans/sparql_querying/wiki
 [ontology_schema]: figs/Ontology_Schema.png?raw=true
 [queryer_composite]: figs/Queryer_Composite.png?raw=true
