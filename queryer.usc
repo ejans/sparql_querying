@@ -267,7 +267,7 @@ return bd.system {
       "std_blocks/lfds_buffers/lfds_cyclic.so",
       "std_blocks/hexdump/hexdump.so",
       "std_blocks/luablock/luablock.so",
-      "blocks/sender.so",
+      "types/ssendertypes.so"
    },
    
    blocks = {
