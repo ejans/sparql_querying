@@ -27,7 +27,8 @@ function init(b)
    conf.data = {}
 
    --- set config
-   ubx.set_config(b, "string", "http://www.dajobe.org/foaf.rdf")
+   --ubx.set_config(b, "string", "http://www.dajobe.org/foaf.rdf")
+   ubx.set_config(b, "string", "http://10.72.9.126/pnpo-0.1.owl")
    ubx.set_config(b, "number", 5)
 
    return true
@@ -86,7 +87,11 @@ function init(b)
    conf.data = {}
 
    --- set config
-   ubx.set_config(b, "string", "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?nick, ?name WHERE { ?x rdf:type foaf:Person . ?x foaf:nick ?nick . ?x foaf:name ?name}")
+   --ubx.set_config(b, "string", "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?nick, ?name WHERE { ?x rdf:type foaf:Person . ?x foaf:nick ?nick . ?x foaf:name ?name}")
+   --ubx.set_config(b, "string", "SELECT ?s, ?p, ?o WHERE { ?s ?p ?o .}")
+   --ubx.set_config(b, "string", "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s, ?o WHERE { ?s rdfs:label ?o .}")
+   --ubx.set_config(b, "string", 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s WHERE { ?s ?p ?o .}')
+   ubx.set_config(b, "string", 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s WHERE { ?s rdfs:label "cherry tomato 123456"@en .}')
    ubx.set_config(b, "number", 5)
 
    return true
