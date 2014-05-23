@@ -91,7 +91,8 @@ function init(b)
    --ubx.set_config(b, "string", "SELECT ?s, ?p, ?o WHERE { ?s ?p ?o .}")
    --ubx.set_config(b, "string", "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s, ?o WHERE { ?s rdfs:label ?o .}")
    --ubx.set_config(b, "string", 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s WHERE { ?s ?p ?o .}')
-   ubx.set_config(b, "string", 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s WHERE { ?s rdfs:label "cherry tomato 123456"@en .}')
+   --ubx.set_config(b, "string", 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s WHERE { ?s rdfs:label "cherry tomato 123456"@en .}')
+   ubx.set_config(b, "string", 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX pnpo: <http://www.wurvoc.org/vocabularies/pnpo-0.1/> PREFIX om: <http://www.wurvoc.org/vocabularies/om-1.8/> SELECT ?numval ?uomoms WHERE { ?s rdfs:label "cherry tomato 123456"@en . ?s pnpo:shape ?shape . ?shape pnpo:radius ?measure . ?measure om:numerical_value ?numval . ?measure om:unit_of_measure_or_measurement_scale ?uomoms}')
    ubx.set_config(b, "number", 5)
 
    return true
