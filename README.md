@@ -50,21 +50,9 @@ environments)
 Task List
 =========
 
-### Short term
-
 - [ ] Internal iblocks
 - [ ] Bring configuration outside
 - [ ] Different representations of result --> config
-
-
-### Long term
-
-- [ ] Configuration "array" with:
-	- [ ] Multiple queries
-	- [ ] Ports to be created to send the data received from these queries?
-	- [ ] Local filesave of received data?
-- [ ] Configuration is an input port
-- [ ] Ports are automatically made from configuration?
 - [ ] Filter block in separate [repo]
 - [ ] Separate the _datatype_ we are going to query (e.g. hdf5, netcdf, rdf, ...) with the _transport protocol_ (http, local, ethercat, ...) so we can add middleware into the communication specific parts. --> queryer block with smaller blocks inside --> Possible to separate with redland lib?
 
