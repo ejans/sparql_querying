@@ -28,7 +28,8 @@ function init(b)
 
    --- set config
    --ubx.set_config(b, "string", "http://www.dajobe.org/foaf.rdf")
-   ubx.set_config(b, "string", "http://10.72.9.126/pnpo-0.1.owl")
+   --ubx.set_config(b, "string", "http://10.72.9.126/pnpo-0.1.owl")
+   ubx.set_config(b, "string", "http://192.168.43.11/pnpo-0.1.owl")
    ubx.set_config(b, "number", 5)
 
    return true
