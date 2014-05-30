@@ -20,17 +20,31 @@ function init(b)
    --- add ports
    ubx.port_add(b, "data", "This port sends out the struct", nil, 0, "struct structsender_data", 1, 0)
 
+   ubx.port_add(b, "local_in", "The internal in port", "char", 1, nil, 1, 0)
+   ubx.port_add(b, "local_out", "The internal out port", nil, 0, "char", 1, 0)
+
    --- initialize conf
    conf={}
    local port = ubx.port_get(b, "data")
    conf.ubx_data = ubx.port_alloc_write_sample(port)
    conf.data = {}
 
-   --- set config
-   --ubx.set_config(b, "string", "http://www.dajobe.org/foaf.rdf")
-   --ubx.set_config(b, "string", "http://10.72.9.126/pnpo-0.1.owl")
-   ubx.set_config(b, "string", "http://192.168.43.11/pnpo-0.1.owl")
-   ubx.set_config(b, "number", 5)
+   ----- set config
+   ----ubx.set_config(b, "string", "http://www.dajobe.org/foaf.rdf")
+   ----ubx.set_config(b, "string", "http://10.72.9.126/pnpo-0.1.owl")
+   --ubx.set_config(b, "string", "http://192.168.43.11/pnpo-0.1.owl")
+   --ubx.set_config(b, "number", 5)
+
+   --- set config to local i_block
+   --ubx.module_load(b.ni, "std_blocks/lfds_buffers/lfds_cyclic.so")
+   local fifo = ubx.block_create(b.ni, "lfds_buffers/cyclic", "local_fifo", {buffer_len=1, type_name="char"})
+
+   local local_in = ubx.port_get(b, "local_in")
+   local local_out = ubx.port_get(b, "local_out")
+
+   ubx.ports_connect_uni(local_out, local_in, fifo)
+   ubx.block_init(fifo)
+   ubx.block_start(fifo)
 
    return true
 end
