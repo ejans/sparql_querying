@@ -14,27 +14,36 @@ function init(b)
    b=ffi.cast("ubx_block_t*", b)
    ubx.ffi_load_types(b.ni)
 
+   --- add config
+   ubx.config_add(b, "string", "The uri to be queried", "char", 1)
+   ubx.config_add(b, "number", "The integer to be send", "int", 1)
+
    --- add ports
    ubx.port_add(b, "data", "This port sends out the struct", nil, 0, "struct structsender_data", 1, 0)
    ubx.port_add(b, "localp", "The internal port", "struct structsender_data", 1, "struct structsender_data", 1, 0)
 
-   --- allocate samples
+   --- initialize conf
    conf = {}
    local port = ubx.port_get(b, "data")
    local lclp = ubx.port_get(b, "localp")
 
+   --- allocate samples
    conf.port_sample=ubx.port_alloc_write_sample(port)
    conf.lcalp_sample_wr=ubx.port_alloc_write_sample(lclp)
    conf.lcalp_sample_rd=ubx.port_alloc_read_sample(lclp)
 
-   --- set config to local i_block
+   --- set config
+   --ubx.set_config(b, "string", "http://www.dajobe.org/foaf.rdf")
+   --ubx.set_config(b, "string", "http://10.72.9.126/pnpo-0.1.owl")
+   ubx.set_config(b, "string", "http://192.168.43.176/pnpo-0.1.owl")
+   ubx.set_config(b, "number", 5)
+
+   --- create local i_block
    --ubx.module_load(b.ni, "std_blocks/lfds_buffers/lfds_cyclic.so")
    local fifo = ubx.block_create(b.ni, "lfds_buffers/cyclic", "local_fifo", {buffer_len=1, type_name="struct structsender_data"})
    local lcalp = ubx.port_get(b, "localp")
 
    ubx.ports_connect_uni(lcalp, lcalp, fifo)
-   ubx.block_init(fifo)
-   ubx.block_start(fifo)
 
    return true
 
@@ -42,17 +51,33 @@ end
 
 function start(b)
 
+   b=ffi.cast("ubx_block_t*", b)
    local lcalp = ubx.port_get(b, "localp")
-   local con = {}
+   local fifo = ubx.block_get(b.ni, "local_fifo")
 
-   con.number = ffi.cast("int", 5)
-   --con.text = ffi.cast("char*", "http://www.dajobe.org/foaf.rdf")
-   --con.text = ffi.cast("char*", "http://10.72.9.126/pnpo-0.1.owl")
-   con.text = ffi.cast("char*", "http://192.168.43.176/pnpo-0.1.owl")
+   if (fifo:get_block_state() == "preinit") then
+      
+      local con = {}
+      
+      ubx.block_init(fifo)
+      ubx.block_start(fifo)
 
-   ubx.data_set(conf.lcalp_sample_wr, con)
-   ubx.port_write(lcalp, conf.lcalp_sample_wr)
-   --print(conf.lcalp_sample_wr)
+      --- set config to i_block
+      con.number = ffi.cast("int", ubx.data_tolua(ubx.config_get_data(b, "number")))
+      con.text = ffi.cast("char*", ubx.data_tolua(ubx.config_get_data(b, "string")))
+
+      ubx.data_set(conf.lcalp_sample_wr, con)
+      ubx.port_write(lcalp, conf.lcalp_sample_wr)
+      
+      --- remove config
+      ubx.config_rm(b, "number")
+      ubx.config_rm(b, "string")
+
+   else
+
+      --- write port???
+      
+   end
 
    return true
 
@@ -82,7 +107,12 @@ end
 
 function cleanup(b)
 
-   --ubx.block_unload(b.ni, "local_fifo")
+   b=ffi.cast("ubx_block_t*", b)
+   local fifo = ubx.block_get(b.ni, "local_fifo")
+   local lclp = ubx.port_get(b, "localp")
+   ubx.ports_disconnect_uni(lclp, lclp, fifo)
+   ubx.block_unload(b.ni, "local_fifo")
+
    conf=nil
 
 end
