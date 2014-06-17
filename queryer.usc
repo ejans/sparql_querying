@@ -1,0 +1,447 @@
+-- -*- mode: lua; -*-
+
+lua_structsender_uri = [[
+
+local ubx=require "ubx"
+local ffi = require "ffi"
+local ts = tostring
+
+-- global state
+conf=nil
+
+function init(b)
+
+   b=ffi.cast("ubx_block_t*", b)
+   ubx.ffi_load_types(b.ni)
+
+   --- add config
+   ubx.config_add(b, "string", "The uri to be queried", "char", 1)
+   ubx.config_add(b, "number", "The integer to be send", "int", 1)
+
+   --- add ports
+   ubx.port_add(b, "data", "This port sends out the struct", nil, 0, "struct structsender_data", 1, 0)
+   ubx.port_add(b, "localp", "The internal port", "struct structsender_data", 1, "struct structsender_data", 1, 0)
+
+   --- initialize conf
+   conf = {}
+   local port = ubx.port_get(b, "data")
+   local lclp = ubx.port_get(b, "localp")
+
+   --- allocate samples
+   conf.port_sample=ubx.port_alloc_write_sample(port)
+   conf.lcalp_sample_wr=ubx.port_alloc_write_sample(lclp)
+   conf.lcalp_sample_rd=ubx.port_alloc_read_sample(lclp)
+
+   --- set config
+   --ubx.set_config(b, "string", "http://www.dajobe.org/foaf.rdf")
+   --ubx.set_config(b, "string", "http://10.72.9.126/pnpo-0.1.owl")
+   ubx.set_config(b, "string", "http://192.168.43.176/pnpo-0.1.owl")
+   ubx.set_config(b, "number", 5)
+
+   --- create local i_block
+   --ubx.module_load(b.ni, "std_blocks/lfds_buffers/lfds_cyclic.so")
+   local fifo = ubx.block_create(b.ni, "lfds_buffers/cyclic", "local_fifo_uri", {buffer_len=1, type_name="struct structsender_data"})
+   local lcalp = ubx.port_get(b, "localp")
+
+   ubx.ports_connect_uni(lcalp, lcalp, fifo)
+
+   return true
+
+end
+
+function start(b)
+
+   b=ffi.cast("ubx_block_t*", b)
+   local lcalp = ubx.port_get(b, "localp")
+   local fifo = ubx.block_get(b.ni, "local_fifo_uri")
+
+   if (fifo:get_block_state() == "preinit") then
+      
+      local con = {}
+      
+      ubx.block_init(fifo)
+      ubx.block_start(fifo)
+
+      --- set config to i_block
+      con.number = ffi.cast("int", ubx.data_tolua(ubx.config_get_data(b, "number")))
+      con.text = ffi.cast("char*", ubx.data_tolua(ubx.config_get_data(b, "string")))
+
+      ubx.data_set(conf.lcalp_sample_wr, con)
+      ubx.port_write(lcalp, conf.lcalp_sample_wr)
+      
+      --- remove config
+      ubx.config_rm(b, "number")
+      ubx.config_rm(b, "string")
+
+   else
+
+      --- write port???
+      
+   end
+
+   return true
+
+end
+
+function step(b)
+
+   local port = ubx.port_get(b, "data")
+   local lclp = ubx.port_get(b, "localp")
+   local con = {}
+
+   ubx.port_read(lclp, conf.lcalp_sample_rd)
+   local con2 = ubx.data_to_cdata(conf.lcalp_sample_rd)
+
+   local text = ffi.string(con2.text)
+   local number = con2.number
+
+   con.number = ffi.cast("int", number)
+   con.text = ffi.cast("char*", text)
+   ubx.data_set(conf.port_sample, con)
+   ubx.data_set(conf.lcalp_sample_wr, con)
+
+   ubx.port_write(port, conf.port_sample)
+   ubx.port_write(lclp, conf.lcalp_sample_rd)
+
+end
+
+function cleanup(b)
+
+   b=ffi.cast("ubx_block_t*", b)
+   local fifo = ubx.block_get(b.ni, "local_fifo_uri")
+   local lclp = ubx.port_get(b, "localp")
+   ubx.ports_disconnect_uni(lclp, lclp, fifo)
+   ubx.block_unload(b.ni, "local_fifo_uri")
+
+   conf=nil
+
+end
+
+]]
+
+lua_structsender_query_cmd = [[
+
+local ubx=require "ubx"
+local ffi = require "ffi"
+local ts = tostring
+
+-- global state
+conf=nil
+
+function init(b)
+
+   b=ffi.cast("ubx_block_t*", b)
+   ubx.ffi_load_types(b.ni)
+
+   --- add config
+   ubx.config_add(b, "string", "The uri to be queried", "char", 1)
+   ubx.config_add(b, "number", "The integer to be send", "int", 1)
+
+   --- add ports
+   ubx.port_add(b, "data", "This port sends out the struct", nil, 0, "struct structsender_data", 1, 0)
+   ubx.port_add(b, "localp", "The internal port", "struct structsender_data", 1, "struct structsender_data", 1, 0)
+
+   --- initialize conf
+   conf = {}
+   local port = ubx.port_get(b, "data")
+   local lclp = ubx.port_get(b, "localp")
+
+   --- allocate samples
+   conf.port_sample=ubx.port_alloc_write_sample(port)
+   conf.lcalp_sample_wr=ubx.port_alloc_write_sample(lclp)
+   conf.lcalp_sample_rd=ubx.port_alloc_read_sample(lclp)
+
+   --- set config
+   --ubx.set_config(b, "string", "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?nick, ?name WHERE { ?x rdf:type foaf:Person . ?x foaf:nick ?nick . ?x foaf:name ?name}")
+   --ubx.set_config(b, "string", "SELECT ?s, ?p, ?o WHERE { ?s ?p ?o .}")
+   --ubx.set_config(b, "string", "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s, ?o WHERE { ?s rdfs:label ?o .}")
+   --ubx.set_config(b, "string", 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s WHERE { ?s ?p ?o .}')
+   --ubx.set_config(b, "string", 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s WHERE { ?s rdfs:label "cherry tomato 123456"@en .}')
+   ubx.set_config(b, "string", 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX pnpo: <http://www.wurvoc.org/vocabularies/pnpo-0.1/> PREFIX om: <http://www.wurvoc.org/vocabularies/om-1.8/> SELECT ?numval ?uomoms WHERE { ?s rdfs:label "cherry tomato 123456"@en . ?s pnpo:shape ?shape . ?shape pnpo:radius ?measure . ?measure om:numerical_value ?numval . ?measure om:unit_of_measure_or_measurement_scale ?uomoms}')
+   ubx.set_config(b, "number", 5)
+
+   --- create local i_block
+   --ubx.module_load(b.ni, "std_blocks/lfds_buffers/lfds_cyclic.so")
+   local fifo = ubx.block_create(b.ni, "lfds_buffers/cyclic", "local_fifo_query", {buffer_len=1, type_name="struct structsender_data"})
+   local lcalp = ubx.port_get(b, "localp")
+
+   ubx.ports_connect_uni(lcalp, lcalp, fifo)
+
+   return true
+
+end
+
+function start(b)
+
+   b=ffi.cast("ubx_block_t*", b)
+   local lcalp = ubx.port_get(b, "localp")
+   local fifo = ubx.block_get(b.ni, "local_fifo_query")
+
+   if (fifo:get_block_state() == "preinit") then
+      
+      local con = {}
+      
+      ubx.block_init(fifo)
+      ubx.block_start(fifo)
+
+      --- set config to i_block
+      con.number = ffi.cast("int", ubx.data_tolua(ubx.config_get_data(b, "number")))
+      con.text = ffi.cast("char*", ubx.data_tolua(ubx.config_get_data(b, "string")))
+
+      ubx.data_set(conf.lcalp_sample_wr, con)
+      ubx.port_write(lcalp, conf.lcalp_sample_wr)
+      
+      --- remove config
+      ubx.config_rm(b, "number")
+      ubx.config_rm(b, "string")
+
+   else
+
+      --- write port???
+      
+   end
+
+   return true
+
+end
+
+function step(b)
+
+   local port = ubx.port_get(b, "data")
+   local lclp = ubx.port_get(b, "localp")
+   local con = {}
+
+   ubx.port_read(lclp, conf.lcalp_sample_rd)
+   local con2 = ubx.data_to_cdata(conf.lcalp_sample_rd)
+
+   local text = ffi.string(con2.text)
+   local number = con2.number
+
+   con.number = ffi.cast("int", number)
+   con.text = ffi.cast("char*", text)
+   ubx.data_set(conf.port_sample, con)
+   ubx.data_set(conf.lcalp_sample_wr, con)
+
+   ubx.port_write(port, conf.port_sample)
+   ubx.port_write(lclp, conf.lcalp_sample_rd)
+
+end
+
+function cleanup(b)
+
+   b=ffi.cast("ubx_block_t*", b)
+   local fifo = ubx.block_get(b.ni, "local_fifo_query")
+   local lclp = ubx.port_get(b, "localp")
+   ubx.ports_disconnect_uni(lclp, lclp, fifo)
+   ubx.block_unload(b.ni, "local_fifo_query")
+
+   conf=nil
+
+end
+
+]]
+
+lua_structsender_receiver = [[
+
+local ubx=require "ubx"
+local ffi = require "ffi"
+local ts = tostring
+
+-- global state
+conf=nil
+
+function init(b)
+
+   b=ffi.cast("ubx_block_t*", b)
+   ubx.ffi_load_types(b.ni)
+
+   --- add ports
+   ubx.port_add(b, "data", "This port receives the struct", "struct structsender_data", 1, nil, 0, 0)
+
+   --- initialize conf
+   conf={}
+   local port = ubx.port_get(b, "data")
+   conf.ubx_data = ubx.port_alloc_read_sample(port)
+
+   return true
+
+end
+
+function step(b)
+
+   local port = ubx.port_get(b, "data")
+   ubx.port_read(port, conf.ubx_data)
+   local dat = ubx.data_to_cdata(conf.ubx_data)
+   local text = ffi.string(dat.text)
+   local number = dat.number
+   --print("DATA: "..ts(conf.ubx_data))
+   print("DATA.TEXT: "..text)
+   --print("DATA.NUMBER: "..number)
+   --print("================")
+
+end
+
+function cleanup(b)
+
+   conf=nil
+
+end
+
+]]
+
+lua_sparqlqueryer_queryer = [[
+
+local ubx=require "ubx"
+local ffi = require "ffi"
+local ts = tostring
+local redland = require"redland"
+
+-- global state
+conf=nil
+
+--- init: create ports and connections.
+function init(b)
+
+   b=ffi.cast("ubx_block_t*", b)
+   ubx.ffi_load_types(b.ni)
+
+   --- add ports
+   ubx.port_add(b, "result", "This port sends out the query result", nil, 0, "struct structsender_data", 1, 0)
+   ubx.port_add(b, "uri", "This port receives the uri", "struct structsender_data", 1, nil, 0, 0)
+   ubx.port_add(b, "query_command", "This port receives the query command", "struct structsender_data", 1, nil, 0, 0)
+
+   conf={}
+   local p1 = ubx.port_get(b, "result")
+   local p2 = ubx.port_get(b, "uri")
+   local p3 = ubx.port_get(b, "query_command")
+   --- Create ubx_data
+   conf.ubx_data = ubx.port_alloc_write_sample(p1)
+   conf.ubx_uri = ubx.port_alloc_read_sample(p2)
+   conf.ubx_query_command = ubx.port_alloc_read_sample(p3)
+
+   --- Redland part
+   conf.world = redland.librdf_new_world()
+   --- TODO Put these in config?
+   local storage = redland.librdf_new_storage(conf.world,'hashes','dummy',"new=yes,hash-type='memory'")
+   conf.model = redland.librdf_new_model(conf.world,storage,'')
+
+   return true
+
+end
+
+--- start
+function start(b)
+
+   --print("Start")
+
+   return true
+
+end
+
+--- step
+function step(b)
+
+   local p1 = ubx.port_get(b, "result")
+   local p2 = ubx.port_get(b, "uri")
+   local p3 = ubx.port_get(b, "query_command")
+   if ubx.port_read(p2, conf.ubx_uri) < 0 then
+      print("queryer: failed to read from uri port")
+   end
+   if ubx.port_read(p3, conf.ubx_query_command) < 0 then
+      print("queryer: failed to read from query_command port")
+   end
+
+   --local ubx_uri_lua = ubx.data_tolua(conf.ubx_uri)
+   --local uri_text = ubx_uri_lua.text
+   --local ubx_query_command_lua = ubx.data_tolua(conf.ubx_query_command)
+   ----print("ubx_uri: "..ts(ubx_uri_lua.text))
+   --print("ubx_uri: "..ubx_uri_lua.text)
+   --print("ubx_query_command: "..ts(ubx_query_command_lua.text))
+
+   --- TODO Test
+   local ubx_uri_c = ubx.data_to_cdata(conf.ubx_uri)
+   local ubx_query_command_c = ubx.data_to_cdata(conf.ubx_query_command)
+   local ubx_uri_text = ffi.string(ubx_uri_c.text)
+   local ubx_query_command_text = ffi.string(ubx_query_command_c.text)
+   --print("ubx_uri_text: "..ubx_uri_text)
+   --print("ubx_query_command_text: "..ubx_query_command_text)
+
+   local parser = redland.librdf_new_parser(conf.world,'rdfxml','application/rdf+xml', nil)
+   local uri = redland.librdf_new_uri(conf.world,ubx_uri_text)
+   --print("Parsing...")
+   redland.librdf_parser_parse_into_model(parser,uri,uri,conf.model)
+   --print("Done")
+   redland.librdf_free_uri(uri)
+   redland.librdf_free_parser(parser)
+
+   local query = redland.librdf_new_query(conf.world, 'sparql', nil, ubx_query_command_text, nil)
+   local results = redland.librdf_model_query_execute(conf.model, query)
+   local string_result = redland.librdf_query_results_to_string(results, nil, nil)
+   --print(string_result)
+   local char_result = ffi.cast("char *", string_result)
+   --print(char_result)
+
+   --- send out
+   local data = {}
+   --data.result = char_result
+   data.text = char_result
+   ubx.data_set(conf.ubx_data, data)
+   ubx.port_write(p1, conf.ubx_data)
+
+end
+
+--- cleanup
+function cleanup(b)
+
+   print("Cleanup")
+   conf=nil
+
+end
+
+]]
+
+return bd.system {
+   imports = {
+      "std_types/stdtypes/stdtypes.so",
+      "std_blocks/ptrig/ptrig.so",
+      "std_blocks/lfds_buffers/lfds_cyclic.so",
+      "std_blocks/hexdump/hexdump.so",
+      "std_blocks/luablock/luablock.so",
+      "types/ssendertypes.so"
+   },
+   
+   blocks = {
+      {name="ptrig1", type="std_triggers/ptrig"},
+      {name="fifo1", type="lfds_buffers/cyclic"},
+      {name="fifo2", type="lfds_buffers/cyclic"},
+      {name="fifo3", type="lfds_buffers/cyclic"},
+      {name="sender_uri", type="lua/luablock"},
+      {name="sender_query_cmd", type="lua/luablock"},
+      {name="queryer1", type="lua/luablock"},
+      {name="receiver1", type="lua/luablock"},
+   },
+   
+   connections = {
+      {src="sender_uri.data", tgt="fifo1"},
+      {src="fifo1", tgt="queryer1.uri"},
+      {src="sender_query_cmd.data", tgt="fifo2"},
+      {src="fifo2", tgt="queryer1.query_command"},
+      {src="queryer1.result", tgt="fifo3"},
+      {src="fifo3", tgt="receiver1.data"},
+   },
+
+   configurations = {
+      { name="fifo1", config={type_name="struct structsender_data", buffer_len=1}},
+      { name="fifo2", config={type_name="struct structsender_data", buffer_len=1}},
+      { name="fifo3", config={type_name="struct structsender_data", buffer_len=1}},
+      --{ name="sender1", config={number=5, string="This Is A String"}},
+      { name="sender_uri", config = { lua_str = lua_structsender_uri }},
+      { name="sender_query_cmd", config = { lua_str = lua_structsender_query_cmd }},
+      { name="queryer1", config = { lua_str = lua_sparqlqueryer_queryer }},
+      { name="receiver1", config = { lua_str = lua_structsender_receiver }},
+      { name="ptrig1", config={period={sec=1,usec=0}, trig_blocks={{b="#sender_uri", num_steps=1, measure=0},
+                                                                   {b="#sender_query_cmd", num_steps=1, measure=0},
+                                                                   {b="#queryer1", num_steps=1, measure=0},
+                                                                   {b="#receiver1", num_steps=1, measure=0}}}}
+   },
+}
