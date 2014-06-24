@@ -4,8 +4,6 @@ Description
 A block to query an ontology making use of the [Redland] libraries.
 This version is to be used with the dev branch of microblx.
 
-Checkout [dev branch] for the generic version of this queryer.
-
 Instructions
 ============
 
